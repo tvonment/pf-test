@@ -1,0 +1,36 @@
+$schema: https://azuremlschemas.azureedge.net/promptflow/latest/Flow.schema.json
+environment:
+  python_requirements_txt: requirements.txt
+inputs:
+  text:
+    type: string
+    default: hello world!
+outputs:
+  output_prompt:
+    type: string
+    reference: ${echo_my_prompt.output}
+nodes:
+- name: hello_prompt
+  type: prompt
+  source:
+    type: code
+    path: hello.jinja2
+  inputs:
+    text: ${inputs.text}
+- name: llm
+  type: llm
+  source:
+    type: code
+    path: llm.jinja2
+  inputs:
+    deployment_name: gpt-4o
+    question: ${hello_prompt.output}
+  connection: oaiconnection
+  api: chat
+- name: echo_my_prompt
+  type: python
+  source:
+    type: code
+    path: hello.py
+  inputs:
+    input1: ${llm.output}
